@@ -1,5 +1,3 @@
-"""PyCalc is a simple calculator built with Python and PyQt."""
-
 import sys
 from functools import partial
 from PyQt6.QtCore import Qt
