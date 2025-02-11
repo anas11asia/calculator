@@ -1,12 +1,22 @@
-# pycalc.py
-
 """PyCalc is a simple calculator built with Python and PyQt."""
 
 import sys
+from functools import partial
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QApplication,
+    QGridLayout,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
-
+ERROR_MSG = "ERROR"
 WINDOW_SIZE = 235
+DISPLAY_HEIGHT = 35
+BUTTON_SIZE = 40
 
 
 class PyCalcWindow(QMainWindow):
@@ -16,23 +26,19 @@ class PyCalcWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("PyCalc")
         self.setFixedSize(WINDOW_SIZE, WINDOW_SIZE)
+        self.generalLayout = QVBoxLayout()
         centralWidget = QWidget(self)
+        centralWidget.setLayout(self.generalLayout)
         self.setCentralWidget(centralWidget)
+        self._createDisplay()
+        self._createButtons()
 
-
-def main():
-    """PyCalc's main function."""
-    pycalcApp = QApplication([])
-    pycalcWindow = PyCalcWindow()
-    pycalcWindow.show()
-    sys.exit(pycalcApp.exec())
-
-
-if __name__ == "__main__":
-    main()
-
-
-class PyCalcWindow(QMainWindow):
+    def _createDisplay(self):
+        self.display = QLineEdit()
+        self.display.setFixedHeight(DISPLAY_HEIGHT)
+        self.display.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.display.setReadOnly(True)
+        self.generalLayout.addWidget(self.display)
 
     def _createButtons(self):
         self.buttonMap = {}
@@ -52,9 +58,6 @@ class PyCalcWindow(QMainWindow):
 
         self.generalLayout.addLayout(buttonsLayout)
 
-
-class PyCalcWindow(QMainWindow):
-
     def setDisplayText(self, text):
         """Set the display's text."""
         self.display.setText(text)
@@ -67,6 +70,15 @@ class PyCalcWindow(QMainWindow):
     def clearDisplay(self):
         """Clear the display."""
         self.setDisplayText("")
+
+
+def evaluateExpression(expression):
+    """Evaluate an expression (Model)."""
+    try:
+        result = str(eval(expression, {}, {}))
+    except Exception:
+        result = ERROR_MSG
+    return result
 
 
 class PyCalc:
@@ -94,3 +106,16 @@ class PyCalc:
         self._view.buttonMap["="].clicked.connect(self._calculateResult)
         self._view.display.returnPressed.connect(self._calculateResult)
         self._view.buttonMap["C"].clicked.connect(self._view.clearDisplay)
+
+
+def main():
+    """PyCalc's main function."""
+    pycalcApp = QApplication([])
+    pycalcWindow = PyCalcWindow()
+    pycalcWindow.show()
+    PyCalc(model=evaluateExpression, view=pycalcWindow)
+    sys.exit(pycalcApp.exec())
+
+
+if __name__ == "__main__":
+    main()
